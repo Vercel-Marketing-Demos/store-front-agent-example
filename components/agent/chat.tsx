@@ -133,7 +133,7 @@ export function Chat() {
   async function reset() {
     setTurns([]);
     seenTurnIds.current.clear();
-    if (agent.messages.length > 0) await agent.reset().catch(() => undefined);
+    if (agent.messages.length > 0) await agent.end().catch(() => undefined);
     agent.newSession();
   }
 
