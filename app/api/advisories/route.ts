@@ -4,9 +4,10 @@ import { z } from "zod";
 
 import { clearAdvisories, countOrdersWithBatches, flagBatches, listAdvisories } from "@/lib/advisories";
 
-// Batch advisories for internal systems: NorthStar flags a bad production batch
+// Batch advisories for internal systems: Scout flags a bad production batch
 // here after a person approves it in Slack. Callers authenticate with the shared
-// key in ADVISORIES_API_KEY, which NorthStar holds through Vercel Connect.
+// key in ADVISORIES_API_KEY, which Scout holds through Vercel Connect (its connector is still named
+// northstar-advisories, after the ops agent that held it before).
 // Try: curl localhost:3000/api/advisories -H "authorization: Bearer $ADVISORIES_API_KEY"
 
 const batchRef = z.object({ productSlug: z.string().min(1), batch: z.string().min(1) });

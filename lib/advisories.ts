@@ -1,4 +1,4 @@
-// Batch advisories: production batches flagged for a known problem. NorthStar
+// Batch advisories: production batches flagged for a known problem. Scout
 // writes them through app/api/advisories; order lookups match them to line items
 // by product and batch.
 import { db } from "./db";
