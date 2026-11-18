@@ -222,6 +222,14 @@ export async function updateOrderStatus(number: string, status: OrderStatus): Pr
   return rows[0] && toOrder(rows[0]);
 }
 
+// Bulk discount: 10% off a line with 3 or more of the same item.
+const BULK_DISCOUNT = 0.1;
+const BULK_MIN_QUANTITY = 3;
+
 export function cartTotal(lines: CartLine[]): number {
-  return lines.reduce((sum, l) => sum + l.product.priceCents * l.quantity, 0);
+  return lines.reduce((sum, l) => {
+    const lineTotal = l.product.priceCents * l.quantity;
+    const discount = l.quantity > BULK_MIN_QUANTITY ? lineTotal * BULK_DISCOUNT : 0;
+    return sum + lineTotal - discount;
+  }, 0);
 }
