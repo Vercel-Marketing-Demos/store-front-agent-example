@@ -121,6 +121,15 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
   return row && toProduct(row);
 }
 
+// The products with these slugs, in the order given; unknown slugs are skipped. For curated rows
+// on the home page.
+export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
+  const sql = await db();
+  const rows = await sql`select * from products where slug = any(${slugs})`;
+  const bySlug = new Map(rows.map((row) => [row.slug as string, toProduct(row)]));
+  return slugs.flatMap((slug) => bySlug.get(slug) ?? []);
+}
+
 export async function getCategories(): Promise<string[]> {
   const sql = await db();
   const rows = await sql`select distinct category from products order by category`;

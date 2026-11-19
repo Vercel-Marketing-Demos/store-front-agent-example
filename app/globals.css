@@ -2,6 +2,15 @@
 
 @theme {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* Northern Goods' earth tones, taken from the product illustrations. */
+  --color-forest: #263022;
+  --color-pine: #3f4a2e;
+  --color-moss: #6b7a4b;
+  --color-sage: #c4cab7;
+  --color-sand: #f3ebdf;
+  --color-clay: #b8673a;
 }
 
 body {
