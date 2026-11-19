@@ -1,15 +1,19 @@
+import { evaluate } from "flags/next";
 import Link from "next/link";
+
+import ShopPage from "@/app/shop/page";
 
 import { AskScoutButton } from "@/components/agent/ask-scout";
 import { VercelTip } from "@/components/demo-mode";
 import { HeroLandscape, KitchenScene, TrailScene } from "@/components/home/art";
 import { ProductCard } from "@/components/product-card";
+import { brandHomeFlag, scoutEnabledFlag } from "@/lib/flags";
 import { formatPrice } from "@/lib/format";
 import { getProductsBySlugs, type Product } from "@/lib/store";
 import { VERCEL_LINKS } from "@/lib/vercel-links";
 
 // The brand's front door: a hero, the categories, a few curated edits, and Scout. The full
-// catalog lives at /shop. Rows are picked by slug, so a slug that leaves the catalog just drops out.
+// catalog lives at /shop. With the brand-home flag off, / shows that catalog instead. Rows are picked by slug, so a slug that leaves the catalog just drops out.
 const CATEGORY_TILES = [
   { category: "Apparel", slug: "fleece-half-zip", blurb: "Layers for every season" },
   { category: "Bags", slug: "daypack-20l", blurb: "Packs, totes and duffels" },
@@ -26,14 +30,17 @@ const HOME_GOODS = ["stovetop-kettle", "enamel-mug-set", "camp-blanket", "cedar-
 
 const SCOUT_PROMPTS = ["Warm layers for a fall hike", "Does the fleece run small?", "A gift under $50", "Where's my order?"];
 
-export default async function HomePage() {
+export default async function HomePage(props: { searchParams: Promise<{ category?: string }> }) {
+  const [brandHome, scout] = await evaluate([brandHomeFlag, scoutEnabledFlag]);
+  if (!brandHome) return <ShopPage {...props} />;
+
   const slugs = [...CATEGORY_TILES.map((t) => t.slug), ...FAVORITES, ...LAYERS.map((l) => l.slug), ...HOME_GOODS];
   const products = new Map((await getProductsBySlugs([...new Set(slugs)])).map((p) => [p.slug, p]));
   const pick = (list: string[]) => list.flatMap((slug) => products.get(slug) ?? []);
 
   return (
     <div data-full-bleed>
-      <Hero />
+      <Hero scout={scout} />
 
       <Section eyebrow="Shop by category" title="Everything for out there, and back home.">
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -47,9 +54,12 @@ export default async function HomePage() {
         <ProductRow products={pick(FAVORITES)} />
       </Section>
 
-      <LayeringEdit layers={LAYERS.flatMap((l) => (products.has(l.slug) ? [{ role: l.role, product: products.get(l.slug)! }] : []))} />
+      <LayeringEdit
+        scout={scout}
+        layers={LAYERS.flatMap((l) => (products.has(l.slug) ? [{ role: l.role, product: products.get(l.slug)! }] : []))}
+      />
 
-      <MeetScout />
+      {scout && <MeetScout />}
 
       <Section eyebrow="For the home" title="Slow mornings, well equipped." action={{ href: "/shop?category=Home", label: "Shop home" }}>
         <div className="mb-10 overflow-hidden rounded-3xl">
@@ -58,12 +68,12 @@ export default async function HomePage() {
         <ProductRow products={pick(HOME_GOODS)} />
       </Section>
 
-      <Promises />
+      <Promises scout={scout} />
     </div>
   );
 }
 
-function Hero() {
+function Hero({ scout }: { scout: boolean }) {
   return (
     <section className="relative isolate flex h-[78vh] min-h-[540px] max-h-[760px] overflow-hidden bg-sand">
       <HeroLandscape className="absolute inset-0 -z-10 size-full" />
@@ -77,9 +87,11 @@ function Hero() {
           <Link href="/shop" className="rounded-full bg-forest px-6 py-3 text-sm font-medium text-sand shadow-sm hover:bg-pine">
             Shop the collection
           </Link>
-          <AskScoutButton className="rounded-full bg-white/70 px-6 py-3 text-sm font-medium text-forest ring-1 ring-forest/20 backdrop-blur hover:bg-white">
-            Ask Scout what to pack
-          </AskScoutButton>
+          {scout && (
+            <AskScoutButton className="rounded-full bg-white/70 px-6 py-3 text-sm font-medium text-forest ring-1 ring-forest/20 backdrop-blur hover:bg-white">
+              Ask Scout what to pack
+            </AskScoutButton>
+          )}
         </div>
       </div>
     </section>
@@ -137,7 +149,7 @@ function ProductRow({ products }: { products: Product[] }) {
   );
 }
 
-function LayeringEdit({ layers }: { layers: { role: string; product: Product }[] }) {
+function LayeringEdit({ layers, scout }: { layers: { role: string; product: Product }[]; scout: boolean }) {
   return (
     <section className="bg-sand">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16">
@@ -164,12 +176,14 @@ function LayeringEdit({ layers }: { layers: { role: string; product: Product }[]
               </li>
             ))}
           </ol>
-          <AskScoutButton
-            prompt="Help me pick layers for a cold, wet hike."
-            className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-medium text-sand hover:bg-pine"
-          >
-            Ask Scout to build your layers
-          </AskScoutButton>
+          {scout && (
+            <AskScoutButton
+              prompt="Help me pick layers for a cold, wet hike."
+              className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-medium text-sand hover:bg-pine"
+            >
+              Ask Scout to build your layers
+            </AskScoutButton>
+          )}
         </div>
       </div>
     </section>
@@ -234,14 +248,14 @@ const PROMISES = [
   { title: "Ships next business day", body: "Every order leaves within one business day, with tracking." },
   { title: "Free shipping over $75", body: "A flat $6 under that." },
   { title: "30-day returns", body: "Unworn with tags? Send it back, or swap the size for free." },
-  { title: "Help from Scout", body: "Sizing, orders and returns, answered in seconds." },
+  { title: "Help from Scout", body: "Sizing, orders and returns, answered in seconds.", scout: true },
 ];
 
-function Promises() {
+function Promises({ scout }: { scout: boolean }) {
   return (
     <section className="border-t border-neutral-200 bg-white">
       <ul className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        {PROMISES.map((p) => (
+        {PROMISES.filter((p) => scout || !p.scout).map((p) => (
           <li key={p.title}>
             <p className="font-display text-lg text-forest">{p.title}</p>
             <p className="mt-1 text-sm leading-relaxed text-neutral-600">{p.body}</p>

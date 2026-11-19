@@ -198,6 +198,18 @@ data/
 
 Scout's evals, which check its goodwill credits, live with Scout in [scout-agent](https://github.com/buildswithcoffee/scout-agent).
 
+## Feature flags
+
+Three flags, managed in Vercel Flags (the project's **Flags** tab, or `vercel flags`) and declared in `lib/flags.ts`:
+
+| Flag | Kind | What it does | Default if it can't be read |
+| --- | --- | --- | --- |
+| `brand-home` | boolean | On: the brand landing page at `/`. Off: the product grid there, as before | Off |
+| `scout-enabled` | boolean | Off hides Scout's button, its drawer and every Scout prompt on the site | On |
+| `announcement-bar` | string | The message above the header; the `off` variant hides the bar | The shipping and exchanges message |
+
+Flags Explorer in the Vercel Toolbar overrides any of them for your own browser, on preview deployments and locally with `npm run dev` (it reads `app/.well-known/vercel/flags/route.ts`). Run `vercel env pull` first so `.env.local` has `VERCEL_OIDC_TOKEN` and `FLAGS_SECRET`.
+
 ## Environment variables
 
 | Variable | Set by | Purpose |
@@ -205,7 +217,8 @@ Scout's evals, which check its goodwill credits, live with Scout in [scout-agent
 | `DATABASE_URL` | Neon integration | Postgres connection string |
 | `SCOUT_STOREFRONT_SECRET` | You | Signs the cart token Scout trusts; the same value goes on Scout's project |
 | `NEXT_PUBLIC_SCOUT_URL` | You (optional) | Scout's address, if not `https://scout-agent.verceldemo.com` |
-| `VERCEL_OIDC_TOKEN` | Vercel | Authenticates to AI Gateway |
+| `VERCEL_OIDC_TOKEN` | Vercel | Authenticates to AI Gateway and Vercel Flags |
+| `FLAGS_SECRET` | Vercel Flags | Signs Flags Explorer requests and overrides |
 | `AI_GATEWAY_API_KEY` | You (optional) | Use an API key instead of OIDC |
 | `ADMIN_PASSWORD` | You (optional) | Turns on the store admin at `/admin` |
 | `SUPPLIER_API_TOKEN` | You (optional) | Shared token for the supplier API |

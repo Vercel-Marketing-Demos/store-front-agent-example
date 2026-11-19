@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AskScoutButton } from "@/components/agent/ask-scout";
 import { getCategories } from "@/lib/store";
 
-export async function Footer() {
+export async function Footer({ scout }: { scout: boolean }) {
   const categories = await getCategories();
   const link = "text-sand/70 hover:text-sand hover:underline";
   return (
@@ -36,19 +36,24 @@ export async function Footer() {
         <div>
           <p className="font-medium">Help</p>
           <ul className="mt-3 space-y-2">
-            <li>
-              <AskScoutButton className={link}>Ask Scout</AskScoutButton>
-            </li>
-            <li>
-              <AskScoutButton prompt="Where's my order?" className={link}>
-                Track an order
-              </AskScoutButton>
-            </li>
-            <li>
-              <AskScoutButton prompt="I'd like to start a return." className={link}>
-                Returns and exchanges
-              </AskScoutButton>
-            </li>
+            {/* Scout handles tracking and returns, so these go when the scout-enabled flag is off. */}
+            {scout && (
+              <>
+                <li>
+                  <AskScoutButton className={link}>Ask Scout</AskScoutButton>
+                </li>
+                <li>
+                  <AskScoutButton prompt="Where's my order?" className={link}>
+                    Track an order
+                  </AskScoutButton>
+                </li>
+                <li>
+                  <AskScoutButton prompt="I'd like to start a return." className={link}>
+                    Returns and exchanges
+                  </AskScoutButton>
+                </li>
+              </>
+            )}
             <li>
               <Link href="/cart" className={link}>
                 Your cart

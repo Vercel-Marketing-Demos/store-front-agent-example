@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { VercelTip } from "@/components/demo-mode";
 import { getCartId } from "@/lib/cart-cookie";
+import { announcementBarFlag } from "@/lib/flags";
 import { getCartCount, getCategories } from "@/lib/store";
 import { VERCEL_LINKS } from "@/lib/vercel-links";
 
@@ -16,14 +17,20 @@ function previewOf(): string | null {
 }
 
 export async function Header() {
-  const [count, categories] = await Promise.all([getCartId().then(getCartCount), getCategories()]);
+  const [count, categories, announcement] = await Promise.all([getCartId().then(getCartCount), getCategories(), announcementBarFlag()]);
+  // The announcement-bar flag sets the message; its "off" variant hides the bar. On a phone only
+  // the part before the first " · " shows, so it fits on one line.
+  const [lead, ...rest] = announcement === "off" ? [] : announcement.split(" · ");
   const preview = previewOf();
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur">
-      {/* The same terms Scout gives (its promotions, shipping and returns skills). */}
-      <p className="bg-forest px-4 py-1.5 text-center text-xs tracking-wide text-sand">
-        Free shipping on orders over $75<span className="hidden sm:inline"> · Free exchanges within 30 days</span>
-      </p>
+      {/* Keep the message in step with what Scout says (its promotions, shipping and returns skills). */}
+      {lead && (
+        <p className="bg-forest px-4 py-1.5 text-center text-xs tracking-wide text-sand">
+          {lead}
+          {rest.length > 0 && <span className="hidden sm:inline"> · {rest.join(" · ")}</span>}
+        </p>
+      )}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-lg font-semibold tracking-tight">
