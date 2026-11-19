@@ -109,7 +109,7 @@ For presenters, open the store once with `?demo=1` (for example `https://<your-s
 
 The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off, as does the **Demo mode: on** badge in the bottom-left corner. Shoppers never see any of it.
 
-Demo mode also adds small **+** markers that say what part of Vercel powers each part of the store: Deployments by the store's name, Agent Runs by Scout's name in the drawer, AI Gateway on the latest message's intent, and Sandbox and Workflow by the prompt buttons. Click one to expand it; each links to that place in the Vercel dashboard. The links are in `lib/vercel-links.ts`. Set `NEXT_PUBLIC_VERCEL_TEAM_SLUG` if your copy is in another team.
+Demo mode also adds small **+** markers that say what part of Vercel powers each part of the store: Deployments by the store's name, Agent Runs by Scout's name in the drawer, AI Gateway on the latest message's intent, and Sandbox (with the return's Workflow) on the latest photo in the chat. Click one to expand it; each links to that place in the Vercel dashboard. The links are in `lib/vercel-links.ts`. Set `NEXT_PUBLIC_VERCEL_TEAM_SLUG` if your copy is in another team.
 
 When you're done, press **End chat** in the drawer's header. It ends Scout's session, so the run shows as completed in the Workflows dashboard instead of staying active, and closes the drawer. The chevron next to it only minimizes. If a return is waiting on an associate, end the chat after Scout has passed on the decision, because the decision only reaches the chat while it's open (the email goes out either way).
 
