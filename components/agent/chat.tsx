@@ -45,6 +45,8 @@ export function Chat() {
   const [turns, setTurns] = useState<TurnInfo[]>([]);
   const [photo, setPhoto] = useState<Attachment | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const textInput = useRef<HTMLInputElement>(null);
+  const demo = useDemoMode();
   const router = useRouter();
   const scoutToken = useRef<Promise<CartToken> | null>(null);
   const pendingIntent = useRef<TurnInfo | null>(null);
@@ -202,6 +204,16 @@ export function Chat() {
       </div>
 
       <form onSubmit={submit} className="border-t border-neutral-200 p-3">
+        {demo && (
+          <DemoPrompts
+            disabled={busy}
+            onText={(text) => {
+              setDraft(text);
+              textInput.current?.focus();
+            }}
+            onPhoto={(file) => void attach(file)}
+          />
+        )}
         {photo && (
           <div className="mb-2 flex items-center gap-3">
             <img src={photo.dataUrl} alt="" className="h-14 w-14 rounded-lg object-cover ring-1 ring-neutral-200" />
@@ -232,6 +244,7 @@ export function Chat() {
             <CameraIcon />
           </button>
           <input
+            ref={textInput}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onPaste={onPaste}
@@ -453,6 +466,84 @@ function productsFrom(part: EveToolPart): ProductCardData[] {
 // Shrink the photo before it leaves the browser. Phone photos run to several megabytes
 // and 1280px on the long edge is plenty for the model. Re-encoding as JPEG also drops
 // the location and camera metadata phones embed.
+// Demo mode: the presenter opens the storefront once with ?demo=1, and the chat remembers it on that
+// browser (?demo=0 turns it off). It only adds the prompt buttons below; shoppers never see them.
+const DEMO_KEY = "scout-demo";
+
+function useDemoMode(): boolean {
+  const [demo, setDemo] = useState(false);
+  useEffect(() => {
+    try {
+      const asked = new URLSearchParams(window.location.search).get("demo");
+      if (asked === "1") localStorage.setItem(DEMO_KEY, "1");
+      if (asked === "0") localStorage.removeItem(DEMO_KEY);
+      setDemo(localStorage.getItem(DEMO_KEY) === "1");
+    } catch {
+      // Storage can be unavailable; demo mode just stays off.
+    }
+  }, []);
+  return demo;
+}
+
+const DEMO_TEXT = {
+  warm: "Tell me about products that keep me warm while hiking",
+  tear: "Hi, the jacket I ordered arrived with a tear in the sleeve. Can I return it?",
+};
+
+// The presenter's script for the return demo, as small buttons above the input. Each fills the
+// input (or attaches the photo) without sending, so the presenter still presses Send. The order
+// number is looked up when pressed, because the retail demo's reset recreates Alex's order.
+function DemoPrompts({ disabled, onText, onPhoto }: { disabled: boolean; onText: (text: string) => void; onPhoto: (file: File) => void }) {
+  const [note, setNote] = useState<string | null>(null);
+
+  async function photo() {
+    setNote(null);
+    try {
+      const res = await fetch("/demo/torn-sleeve.jpg");
+      const blob = await res.blob();
+      onPhoto(new File([blob], "torn-sleeve.jpg", { type: blob.type || "image/jpeg" }));
+    } catch {
+      setNote("Couldn't load the photo.");
+    }
+  }
+
+  async function order() {
+    setNote(null);
+    try {
+      const res = await fetch("/api/demo/alex-order", { method: "POST" });
+      const data = (await res.json()) as { number: string | null; email: string };
+      if (!data.number) {
+        setNote("No demo order yet. Reset the retail demo in the employee app.");
+        return;
+      }
+      onText(`It's order ${data.number} and my email is ${data.email}.`);
+    } catch {
+      setNote("Couldn't look up the demo order.");
+    }
+  }
+
+  const button = "rounded-full px-2.5 py-1 text-[11px] text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-900 disabled:opacity-40";
+  return (
+    <div className="mb-2">
+      <div className="flex flex-wrap items-center gap-1.5" aria-label="Demo prompts">
+        <button type="button" disabled={disabled} onClick={() => onText(DEMO_TEXT.warm)} className={button} title={DEMO_TEXT.warm}>
+          Warm hiking gear
+        </button>
+        <button type="button" disabled={disabled} onClick={() => onText(DEMO_TEXT.tear)} className={button} title={DEMO_TEXT.tear}>
+          Torn sleeve
+        </button>
+        <button type="button" disabled={disabled} onClick={() => void photo()} className={button} title="Attach the torn-sleeve photo">
+          Photo
+        </button>
+        <button type="button" disabled={disabled} onClick={() => void order()} className={button} title="Alex's order number and email">
+          Order and email
+        </button>
+      </div>
+      {note && <p className="mt-1 text-[11px] text-amber-700">{note}</p>}
+    </div>
+  );
+}
+
 const MAX_EDGE = 1280;
 
 async function prepareImage(file: File): Promise<Attachment> {

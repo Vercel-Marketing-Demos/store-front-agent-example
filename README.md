@@ -99,6 +99,16 @@ Under each message, the drawer shows the intent that was detected and the model 
 
 The search box in the header also handles typos ("sweaater") and vague terms ("athletic").
 
+### Demo mode
+
+For presenters, open the store once with `?demo=1` (for example `https://<your-store>/?demo=1`). The browser remembers it, and Scout's drawer shows four small buttons above the input for the return demo:
+
+- **Warm hiking gear** and **Torn sleeve** fill in the opening questions.
+- **Photo** attaches the torn-sleeve photo (`public/demo/torn-sleeve.jpg`).
+- **Order and email** fills in the demo shopper's current jacket order number and email. The retail demo's reset recreates that order, so the number is looked up each time (`/api/demo/alex-order`).
+
+The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off. Shoppers never see the buttons.
+
 ## Store admin
 
 `/admin/orders` lists every order and lets you change its status. It isn't linked from the storefront. Set `ADMIN_PASSWORD` to turn it on, then sign in at `/admin/login`:
