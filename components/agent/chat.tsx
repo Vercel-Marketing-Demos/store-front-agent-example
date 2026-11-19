@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { formatPrice } from "@/lib/format";
 import { SCOUT_URL, type CartToken } from "@/lib/scout-url";
+import { OPEN_SCOUT, type OpenScoutDetail } from "@/components/agent/ask-scout";
 import { useDemoMode, VercelTip } from "@/components/demo-mode";
 import { VERCEL_LINKS } from "@/lib/vercel-links";
 
@@ -95,6 +96,24 @@ export function Chat() {
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: "end" });
   }, [agent.messages]);
+
+  // Other parts of the page open the drawer with openScout(), optionally with a prompt to send.
+  const focusComposer = useRef(false);
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const prompt = (event as CustomEvent<OpenScoutDetail>).detail?.prompt;
+      if (prompt) setDraft(prompt);
+      focusComposer.current = true;
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_SCOUT, onOpen);
+    return () => window.removeEventListener(OPEN_SCOUT, onOpen);
+  }, []);
+  useEffect(() => {
+    if (!open || !focusComposer.current) return;
+    focusComposer.current = false;
+    textInput.current?.focus();
+  }, [open, draft]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { VercelTip } from "@/components/demo-mode";
 import { getCartId } from "@/lib/cart-cookie";
-import { getCartCount } from "@/lib/store";
+import { getCartCount, getCategories } from "@/lib/store";
 import { VERCEL_LINKS } from "@/lib/vercel-links";
 
 // On a preview deployment (a pull request's, such as a demo PR from the employee app), the header
@@ -16,11 +16,15 @@ function previewOf(): string | null {
 }
 
 export async function Header() {
-  const count = await getCartCount(await getCartId());
+  const [count, categories] = await Promise.all([getCartId().then(getCartCount), getCategories()]);
   const preview = previewOf();
   return (
-    <header className="border-b border-neutral-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+    <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur">
+      {/* The same terms Scout gives (its promotions, shipping and returns skills). */}
+      <p className="bg-forest px-4 py-1.5 text-center text-xs tracking-wide text-sand">
+        Free shipping on orders over $75<span className="hidden sm:inline"> · Free exchanges within 30 days</span>
+      </p>
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-lg font-semibold tracking-tight">
             Northern Goods
@@ -40,7 +44,14 @@ export async function Header() {
             </VercelTip>
           )}
         </div>
-        <form action="/search" className="hidden sm:block">
+        <nav className="hidden items-center gap-5 text-sm text-neutral-700 lg:flex" aria-label="Categories">
+          {categories.map((c) => (
+            <Link key={c} href={`/shop?category=${encodeURIComponent(c)}`} className="hover:text-neutral-900 hover:underline">
+              {c}
+            </Link>
+          ))}
+        </nav>
+        <form action="/search" className="ml-auto hidden sm:block">
           <input
             type="search"
             name="q"
@@ -49,7 +60,7 @@ export async function Header() {
           />
         </form>
         <nav className="flex items-center gap-6 text-sm">
-          <Link href="/" className="hover:underline">
+          <Link href="/shop" className="hover:underline">
             Shop
           </Link>
           <Link href="/cart" className="hover:underline">

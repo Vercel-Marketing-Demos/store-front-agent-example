@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 
-// Demo mode, for presenters: the presenter opens the store once with ?demo=1 and this browser
-// remembers it (?demo=0 turns it off). It adds Scout's prompt buttons and small "+" markers that
+// Demo mode, for presenters: the small ▲ in the bottom-left corner turns it on and off, and this
+// browser remembers it. ?demo=1 and ?demo=0 do the same from a link. It adds Scout's prompt buttons and small "+" markers that
 // say what part of Vercel powers each part of the store. Shoppers never see any of it.
 const DEMO_KEY = "scout-demo";
 const CHANGED = "scout-demo-changed";
@@ -31,12 +31,14 @@ export function useDemoMode(): boolean {
   return demo;
 }
 
-function turnOff() {
+function setDemo(on: boolean) {
   try {
-    localStorage.removeItem(DEMO_KEY);
+    if (on) localStorage.setItem(DEMO_KEY, "1");
+    else localStorage.removeItem(DEMO_KEY);
   } catch {
-    // Nothing to clear.
+    // Storage can be unavailable; the switch then lasts until the page reloads.
   }
+  // Drop ?demo=… from the address, so a reload doesn't undo the switch.
   const url = new URL(window.location.href);
   if (url.searchParams.has("demo")) {
     url.searchParams.delete("demo");
@@ -45,18 +47,21 @@ function turnOff() {
   window.dispatchEvent(new Event(CHANGED));
 }
 
-// Bottom left, only while demo mode is on: a small dark ▲ that shows it's on, and turns it off.
-export function DemoModeBadge() {
+// Bottom left, always: a small ▲ that turns demo mode on and off. Faint when off, so shoppers
+// hardly notice it; dark when on.
+export function DemoModeToggle() {
   const demo = useDemoMode();
-  if (!demo) return null;
-  const label = "Demo mode is on: turn it off on this browser";
+  const label = demo ? "Demo mode is on: hide what powers each part of the store" : "Demo mode: show what powers each part of the store";
   return (
     <button
       type="button"
-      onClick={turnOff}
+      onClick={() => setDemo(!demo)}
+      aria-pressed={demo}
       aria-label={label}
       title={label}
-      className="fixed bottom-4 left-4 z-40 flex size-7 items-center justify-center rounded-full bg-neutral-900 text-[10px] text-white shadow-sm ring-1 ring-neutral-900"
+      className={`fixed bottom-4 left-4 z-40 flex size-7 items-center justify-center rounded-full text-[10px] shadow-sm ring-1 transition-colors ${
+        demo ? "bg-neutral-900 text-white ring-neutral-900" : "bg-white/80 text-neutral-400 ring-neutral-200 hover:text-neutral-900"
+      }`}
     >
       <span aria-hidden className="-mt-px">
         ▲

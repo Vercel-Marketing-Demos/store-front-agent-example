@@ -101,13 +101,13 @@ The search box in the header also handles typos ("sweaater") and vague terms ("a
 
 ### Demo mode
 
-For presenters, open the store once with `?demo=1` (for example `https://<your-store>/?demo=1`). The browser remembers it, and Scout's drawer shows four small buttons above the input for the return demo:
+For presenters, press the small **▲** in the bottom-left corner of any page (or open the store once with `?demo=1`, for example `https://<your-store>/?demo=1`). It turns dark, the browser remembers it, and Scout's drawer shows four small buttons above the input for the return demo:
 
 - **Warm hiking gear** and **Torn sleeve** fill in the opening questions.
 - **Photo** attaches the torn-sleeve photo (`public/demo/torn-sleeve.jpg`) and fills in "Here's a photo of the tear."
 - **Order and email** fills in the demo shopper's current jacket order number and email. The retail demo's reset recreates that order, so the number is looked up each time (`/api/demo/alex-order`).
 
-The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off, as does the small dark **▲** in the bottom-left corner, which only shows while demo mode is on. Shoppers never see any of it.
+The buttons fill the input without sending, so you still press Send. Press the **▲** again, or use `?demo=0`, to turn demo mode off. Shoppers only ever see the faint ▲; everything else stays hidden until someone turns demo mode on.
 
 Demo mode also adds small **+** markers that say what part of Vercel powers each part of the store: Deployments by the store's name, Agent Runs by Scout's name in the drawer, AI Gateway on the latest message's intent, and Sandbox (with the return's Workflow) on the latest photo in the chat. Click one to expand it; each links to that place in the Vercel dashboard. The links are in `lib/vercel-links.ts`. Set `NEXT_PUBLIC_VERCEL_TEAM_SLUG` if your copy is in another team.
 
@@ -155,7 +155,8 @@ Search uses the same virtual model for its fallback, from `lib/search-intent.ts`
 
 ```
 app/
-  page.tsx                    Home: product grid with category filter
+  page.tsx                    Home: brand landing page with curated rows and Scout
+  shop/page.tsx               Product grid with category filter
   products/[slug]/page.tsx    Product page
   search/page.tsx             Search results
   cart/page.tsx               Cart and demo checkout
