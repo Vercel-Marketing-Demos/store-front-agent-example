@@ -164,6 +164,11 @@ export function Chat() {
     return isNew;
   });
 
+  // Demo mode's Sandbox marker sits on the conversation's latest photo.
+  const latestPhotoId = [...agent.messages]
+    .reverse()
+    .find((m) => m.role === "user" && m.parts.some((part) => part.type === "file" && part.mediaType.startsWith("image/")))?.id;
+
   // An assistant message shares the turn info of the user message that triggered it.
   let turnIndex = -1;
   let afterUpdate = false;
@@ -229,6 +234,7 @@ export function Chat() {
               info={turns[turnIndex]}
               narrate={narrate[turnIndex] ?? false}
               latest={turnIndex === turns.length - 1}
+              photoTip={message.id === latestPhotoId}
             />
           );
         })}
@@ -340,7 +346,20 @@ async function classify(message: string, recent: RecentMessage[], hasPhoto: bool
 }
 
 // `latest` is the shopper's most recent turn: only its intent chips get demo mode's marker.
-function Message({ message, info, narrate, latest = false }: { message: EveMessage; info?: TurnInfo; narrate: boolean; latest?: boolean }) {
+// `photoTip` puts the Sandbox marker on this message's photo, the conversation's latest.
+function Message({
+  message,
+  info,
+  narrate,
+  latest = false,
+  photoTip = false,
+}: {
+  message: EveMessage;
+  info?: TurnInfo;
+  narrate: boolean;
+  latest?: boolean;
+  photoTip?: boolean;
+}) {
   if (message.role !== "user") return <AssistantMessage message={message} info={info} narrate={narrate} />;
   return (
     <div className="flex flex-col items-end gap-1">
@@ -348,9 +367,24 @@ function Message({ message, info, narrate, latest = false }: { message: EveMessa
         if (part.type === "file" && part.mediaType.startsWith("image/")) {
           // Eve returns a URL only for browser-resolvable attachments, so fall back to our copy.
           const src = part.url ?? info?.imageUrl;
-          return src ? (
-            <img key={index} src={src} alt={part.filename ?? "Attached photo"} className="max-w-[60%] rounded-2xl ring-1 ring-neutral-200" />
-          ) : null;
+          if (!src) return null;
+          const img = <img src={src} alt={part.filename ?? "Attached photo"} className="rounded-2xl ring-1 ring-neutral-200" />;
+          return (
+            <span key={index} className="relative block max-w-[60%]">
+              {img}
+              {photoTip && (
+                <span className="absolute -top-2 -right-2">
+                  <VercelTip product="Vercel Sandbox" href={VERCEL_LINKS.sandboxes} linkLabel="Open Sandboxes in Vercel" align="right">
+                    Scout checks a photo like this by running code on it in a Vercel Sandbox, an isolated machine of its own, before deciding what the
+                    damage is. A return it takes then runs as a durable workflow, which keeps going even after the chat ends.{" "}
+                    <a href={VERCEL_LINKS.workflows} target="_blank" rel="noreferrer" className="font-medium text-white underline underline-offset-2 hover:no-underline">
+                      Open Workflows ↗
+                    </a>
+                  </VercelTip>
+                </span>
+              )}
+            </span>
+          );
         }
         return part.type === "text" && part.text ? (
           <p key={index} className="max-w-[85%] rounded-2xl bg-neutral-900 px-3 py-2 text-sm text-white">
@@ -561,13 +595,6 @@ function DemoPrompts({ disabled, onText, onPhoto }: { disabled: boolean; onText:
         <button type="button" disabled={disabled} onClick={() => void order()} className={button} title="Alex's order number and email">
           Order and email
         </button>
-        <VercelTip product="Sandbox + Workflow" href={VERCEL_LINKS.sandboxes} linkLabel="Open Sandboxes in Vercel" side="top" align="right">
-          Scout checks a photo by running code on it in a Vercel Sandbox, an isolated machine of its own. A return it takes then runs as a durable workflow,
-          which keeps going even after the chat ends.{" "}
-          <a href={VERCEL_LINKS.workflows} target="_blank" rel="noreferrer" className="font-medium text-white underline underline-offset-2 hover:no-underline">
-            Open Workflows ↗
-          </a>
-        </VercelTip>
       </div>
       {note && <p className="mt-1 text-[11px] text-amber-700">{note}</p>}
     </div>
