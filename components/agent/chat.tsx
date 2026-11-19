@@ -130,9 +130,12 @@ export function Chat() {
     void attach(file);
   }
 
-  // New chat ends Scout's session, so its run completes instead of idling for weeks. A return
-  // waiting on an associate runs in its own workflow, so ending the chat leaves it untouched.
-  async function reset() {
+  // End chat retires Scout's session, so its run shows as completed in the Workflows dashboard
+  // instead of idling for weeks, and closes the drawer; the next "Ask Scout" starts fresh. A return
+  // waiting on an associate runs in its own workflow and its email still goes out, but its decision
+  // only appears in the chat while the chat is open, so end the chat after Scout has passed it on.
+  async function endChat() {
+    setOpen(false);
     setTurns([]);
     seenTurnIds.current.clear();
     if (agent.messages.length > 0) await agent.end().catch(() => undefined);
@@ -169,12 +172,26 @@ export function Chat() {
           <p className="text-sm font-semibold">Scout</p>
           <p className="text-xs text-neutral-500">Products, sizing, orders, and your cart</p>
         </div>
-        <div className="flex gap-3 text-xs text-neutral-500">
-          <button type="button" onClick={() => void reset()} className="hover:text-neutral-900">
-            New chat
-          </button>
-          <button type="button" onClick={() => setOpen(false)} className="hover:text-neutral-900">
-            Close
+        <div className="flex items-center gap-2 text-xs text-neutral-500">
+          {agent.messages.length > 0 && (
+            <button
+              type="button"
+              onClick={() => void endChat()}
+              title="End this conversation and close Scout"
+              className="rounded-md px-2 py-1 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-900"
+            >
+              End chat
+            </button>
+          )}
+          {/* Minimize keeps the conversation; reopening "Ask Scout" picks it up again. */}
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Minimize"
+            title="Minimize"
+            className="rounded-md p-1 hover:bg-neutral-50 hover:text-neutral-900"
+          >
+            <ChevronDownIcon />
           </button>
         </div>
       </header>
@@ -488,6 +505,7 @@ function useDemoMode(): boolean {
 const DEMO_TEXT = {
   warm: "Tell me about products that keep me warm while hiking",
   tear: "Hi, the jacket I ordered arrived with a tear in the sleeve. Can I return it?",
+  photo: "Here's a photo of the tear.",
 };
 
 // The presenter's script for the return demo, as small buttons above the input. Each fills the
@@ -502,6 +520,7 @@ function DemoPrompts({ disabled, onText, onPhoto }: { disabled: boolean; onText:
       const res = await fetch("/demo/torn-sleeve.jpg");
       const blob = await res.blob();
       onPhoto(new File([blob], "torn-sleeve.jpg", { type: blob.type || "image/jpeg" }));
+      onText(DEMO_TEXT.photo);
     } catch {
       setNote("Couldn't load the photo.");
     }
@@ -532,7 +551,7 @@ function DemoPrompts({ disabled, onText, onPhoto }: { disabled: boolean; onText:
         <button type="button" disabled={disabled} onClick={() => onText(DEMO_TEXT.tear)} className={button} title={DEMO_TEXT.tear}>
           Torn sleeve
         </button>
-        <button type="button" disabled={disabled} onClick={() => void photo()} className={button} title="Attach the torn-sleeve photo">
+        <button type="button" disabled={disabled} onClick={() => void photo()} className={button} title={`Attach the torn-sleeve photo: "${DEMO_TEXT.photo}"`}>
           Photo
         </button>
         <button type="button" disabled={disabled} onClick={() => void order()} className={button} title="Alex's order number and email">
@@ -574,6 +593,14 @@ function readAsDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  );
 }
 
 function CameraIcon() {
