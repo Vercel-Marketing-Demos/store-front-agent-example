@@ -9,11 +9,14 @@
     "db:images": "node db/images.ts"
   },
   "dependencies": {
+    "@flags-sdk/vercel": "^1.6.0",
     "@neondatabase/serverless": "^1.1.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/toolbar": "^0.2.7",
     "ai": "^7.0.152",
     "eve": "^1.0.2",
+    "flags": "^4.4.0",
     "next": "^16.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

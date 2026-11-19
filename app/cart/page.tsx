@@ -12,7 +12,7 @@ export default async function CartPage() {
     return (
       <div className="py-16 text-center">
         <h1 className="text-2xl font-semibold">Your cart is empty</h1>
-        <Link href="/" className="mt-4 inline-block text-sm underline">
+        <Link href="/shop" className="mt-4 inline-block text-sm underline">
           Continue shopping
         </Link>
       </div>
