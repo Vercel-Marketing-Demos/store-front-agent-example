@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist } from "next/font/google";
 
 import { Chat } from "@/components/agent/chat";
@@ -24,6 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         {hasDatabase && <Chat />}
         <DemoModeBadge />
+        {/* Vercel Web Analytics: page views, sent only from Vercel deployments. */}
+        <Analytics />
       </body>
     </html>
   );
