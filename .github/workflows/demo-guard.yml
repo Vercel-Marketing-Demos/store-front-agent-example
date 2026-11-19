@@ -1,0 +1,29 @@
+# Demo pull requests (opened by the employee app's Demo page) carry planted bugs or unreviewed demo
+# features, and must never reach main. This check fails for them and passes for every other PR;
+# a branch ruleset on main requires it, which turns the failure into a disabled Merge button.
+#
+# A PR counts as a demo PR if it has the demo-moment label or its branch starts with demo/. The
+# branch catches the moment between the PR opening and the label being added.
+name: Demo guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions: {}
+
+jobs:
+  not-for-merging:
+    name: "Demo PR: not for merging"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for the demo label or branch
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if [[ ",$LABELS," == *",demo-moment,"* || "$BRANCH" == demo/* ]]; then
+            echo "::error title=Demo PR::This is a demo pull request from the employee app's Demo page. It is never merged; close it with \"Close all demo PRs\"."
+            exit 1
+          fi
+          echo "Not a demo PR."
