@@ -155,8 +155,7 @@ Search uses the same virtual model for its fallback, from `lib/search-intent.ts`
 
 ```
 app/
-  page.tsx                    Home: brand landing page with curated rows and Scout
-  shop/page.tsx               Product grid with category filter
+  page.tsx                    Home: product grid with category filter
   products/[slug]/page.tsx    Product page
   search/page.tsx             Search results
   cart/page.tsx               Cart and demo checkout

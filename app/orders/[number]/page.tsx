@@ -33,7 +33,7 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
           <span>{formatPrice(total)}</span>
         </li>
       </ul>
-      <Link href="/shop" className="mt-8 inline-block text-sm underline">
+      <Link href="/" className="mt-8 inline-block text-sm underline">
         Back to the shop
       </Link>
     </div>

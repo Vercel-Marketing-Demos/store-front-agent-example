@@ -3,8 +3,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 // Demo mode, for presenters: the small ▲ in the bottom-left corner turns it on and off, and this
-// browser remembers it. ?demo=1 and ?demo=0 do the same from a link. It adds Scout's prompt buttons and small "+" markers that
-// say what part of Vercel powers each part of the store. Shoppers never see any of it.
+// browser remembers it. ?demo=1 and ?demo=0 do the same from a link. It adds Scout's prompt
+// buttons and small "+" markers that say what part of Vercel powers each part of the store.
+// Shoppers only see the faint ▲.
 const DEMO_KEY = "scout-demo";
 const CHANGED = "scout-demo-changed";
 

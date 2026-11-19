@@ -69,7 +69,7 @@ function Empty({ children }: { children: React.ReactNode }) {
   return (
     <div className="space-y-3">
       <p className="text-neutral-700">{children}</p>
-      <Link href="/shop" className="text-sm underline">
+      <Link href="/" className="text-sm underline">
         Browse everything
       </Link>
     </div>
