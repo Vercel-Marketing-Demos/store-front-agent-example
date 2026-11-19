@@ -107,7 +107,7 @@ For presenters, open the store once with `?demo=1` (for example `https://<your-s
 - **Photo** attaches the torn-sleeve photo (`public/demo/torn-sleeve.jpg`) and fills in "Here's a photo of the tear."
 - **Order and email** fills in the demo shopper's current jacket order number and email. The retail demo's reset recreates that order, so the number is looked up each time (`/api/demo/alex-order`).
 
-The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off, as does the **Demo mode: on** badge in the bottom-left corner. Shoppers never see any of it.
+The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off, as does the small dark **▲** in the bottom-left corner, which only shows while demo mode is on. Shoppers never see any of it.
 
 Demo mode also adds small **+** markers that say what part of Vercel powers each part of the store: Deployments by the store's name, Agent Runs by Scout's name in the drawer, AI Gateway on the latest message's intent, and Sandbox (with the return's Workflow) on the latest photo in the chat. Click one to expand it; each links to that place in the Vercel dashboard. The links are in `lib/vercel-links.ts`. Set `NEXT_PUBLIC_VERCEL_TEAM_SLUG` if your copy is in another team.
 
