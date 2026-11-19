@@ -45,18 +45,22 @@ function turnOff() {
   window.dispatchEvent(new Event(CHANGED));
 }
 
-// Bottom left, only while demo mode is on: shows it's on, and turns it off.
+// Bottom left, only while demo mode is on: a small dark ▲ that shows it's on, and turns it off.
 export function DemoModeBadge() {
   const demo = useDemoMode();
   if (!demo) return null;
+  const label = "Demo mode is on: turn it off on this browser";
   return (
     <button
       type="button"
       onClick={turnOff}
-      title="Turn demo mode off on this browser"
-      className="fixed bottom-4 left-4 z-40 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm"
+      aria-label={label}
+      title={label}
+      className="fixed bottom-4 left-4 z-40 flex size-7 items-center justify-center rounded-full bg-neutral-900 text-[10px] text-white shadow-sm ring-1 ring-neutral-900"
     >
-      <span aria-hidden>▲</span> Demo mode: on <span aria-hidden className="text-neutral-400">×</span>
+      <span aria-hidden className="-mt-px">
+        ▲
+      </span>
     </button>
   );
 }
