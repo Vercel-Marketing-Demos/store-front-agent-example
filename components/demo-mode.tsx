@@ -70,6 +70,7 @@ export function VercelTip({
   linkLabel = "Open in Vercel",
   align = "left",
   side = "bottom",
+  always = false,
 }: {
   product: string;
   children: React.ReactNode;
@@ -78,6 +79,8 @@ export function VercelTip({
   align?: "left" | "right";
   /** Open above the marker, for markers near the bottom of the screen. */
   side?: "bottom" | "top";
+  /** Show it outside demo mode too, as on a pull request's preview deployment. */
+  always?: boolean;
 }) {
   const demo = useDemoMode();
   const [open, setOpen] = useState(false);
@@ -98,7 +101,7 @@ export function VercelTip({
       document.removeEventListener("keydown", escape);
     };
   }, [open]);
-  if (!demo) return null;
+  if (!demo && !always) return null;
 
   return (
     <span ref={root} className="relative inline-flex align-middle">

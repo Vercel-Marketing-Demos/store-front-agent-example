@@ -4,6 +4,8 @@ const TEAM = process.env.NEXT_PUBLIC_VERCEL_TEAM_SLUG ?? "marketing-demos-0826-v
 const dashboard = (path: string) => `https://vercel.com/${TEAM}/${path}`;
 
 export const VERCEL_LINKS = {
+  /** This store's project: its production deployment, domains and recent activity. */
+  project: dashboard("northern-goods-store"),
   /** This store's deployments, including each pull request's preview. */
   deployments: dashboard("northern-goods-store/deployments"),
   /** Scout's agent runs: every chat turn, with its model, tools and cost. */
