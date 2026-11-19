@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Geist } from "next/font/google";
 
 import { Chat } from "@/components/agent/chat";
-import { DemoModeBadge } from "@/components/demo-mode";
+import { DemoModeToggle } from "@/components/demo-mode";
 import { Header } from "@/components/header";
 import { hasDatabase } from "@/lib/db";
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {hasDatabase && <Header />}
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         {hasDatabase && <Chat />}
-        <DemoModeBadge />
+        <DemoModeToggle />
         {/* Vercel Web Analytics: page views, sent only from Vercel deployments. */}
         <Analytics />
       </body>
