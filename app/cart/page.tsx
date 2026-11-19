@@ -5,6 +5,9 @@ import { formatPrice } from "@/lib/format";
 import { getCartId } from "@/lib/cart-cookie";
 import { cartTotal, getCart } from "@/lib/store";
 
+// Orders of $75 or more ship free.
+const FREE_SHIPPING_CENTS = 7_500;
+
 export default async function CartPage() {
   const lines = await getCart(await getCartId());
 
@@ -55,7 +58,7 @@ export default async function CartPage() {
           <span>Subtotal</span>
           <span>{formatPrice(cartTotal(lines))}</span>
         </div>
-        <p className="mt-1 text-xs text-neutral-500">Shipping and tax are not part of this demo.</p>
+        <FreeShipping subtotalCents={cartTotal(lines)} />
         <form action={placeOrder} className="mt-6 space-y-3">
           <input
             type="email"
@@ -70,6 +73,32 @@ export default async function CartPage() {
           <p className="text-xs text-neutral-500">No payment is taken. This creates a demo order you can ask Scout about.</p>
         </form>
       </aside>
+    </div>
+  );
+}
+
+// How far the cart is from free shipping, as a sentence and a progress bar.
+function FreeShipping({ subtotalCents }: { subtotalCents: number }) {
+  const remaining = Math.max(0, FREE_SHIPPING_CENTS - subtotalCents);
+  const progress = Math.min(1, subtotalCents / FREE_SHIPPING_CENTS);
+  return (
+    <div className="mt-4">
+      <p className="text-sm">
+        {remaining === 0 ? (
+          <span className="font-medium text-emerald-700">You&apos;ve unlocked free shipping</span>
+        ) : (
+          <>
+            You&apos;re <span className="font-medium">{formatPrice(remaining)}</span> away from free shipping
+          </>
+        )}
+      </p>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
+        <div
+          className={`h-full rounded-full transition-all ${remaining === 0 ? "bg-emerald-600" : "bg-neutral-900"}`}
+          style={{ width: `${Math.round(progress * 100)}%` }}
+        />
+      </div>
+      <p className="mt-2 text-xs text-neutral-500">Orders over {formatPrice(FREE_SHIPPING_CENTS)} ship free. Tax is not part of this demo.</p>
     </div>
   );
 }
