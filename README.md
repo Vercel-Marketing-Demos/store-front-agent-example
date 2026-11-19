@@ -104,10 +104,12 @@ The search box in the header also handles typos ("sweaater") and vague terms ("a
 For presenters, open the store once with `?demo=1` (for example `https://<your-store>/?demo=1`). The browser remembers it, and Scout's drawer shows four small buttons above the input for the return demo:
 
 - **Warm hiking gear** and **Torn sleeve** fill in the opening questions.
-- **Photo** attaches the torn-sleeve photo (`public/demo/torn-sleeve.jpg`).
+- **Photo** attaches the torn-sleeve photo (`public/demo/torn-sleeve.jpg`) and fills in "Here's a photo of the tear."
 - **Order and email** fills in the demo shopper's current jacket order number and email. The retail demo's reset recreates that order, so the number is looked up each time (`/api/demo/alex-order`).
 
 The buttons fill the input without sending, so you still press Send. `?demo=0` turns demo mode off. Shoppers never see the buttons.
+
+When you're done, press **End chat** in the drawer's header. It ends Scout's session, so the run shows as completed in the Workflows dashboard instead of staying active, and closes the drawer. The chevron next to it only minimizes. If a return is waiting on an associate, end the chat after Scout has passed on the decision, because the decision only reaches the chat while it's open (the email goes out either way).
 
 ## Store admin
 
