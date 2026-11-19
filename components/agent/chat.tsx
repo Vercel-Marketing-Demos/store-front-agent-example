@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { formatPrice } from "@/lib/format";
 import { SCOUT_URL, type CartToken } from "@/lib/scout-url";
+import { useDemoMode, VercelTip } from "@/components/demo-mode";
+import { VERCEL_LINKS } from "@/lib/vercel-links";
 
 interface ProductCardData {
   slug: string;
@@ -169,7 +171,13 @@ export function Chat() {
     <div className="fixed inset-x-0 bottom-0 z-50 flex h-[75vh] flex-col rounded-t-2xl bg-white shadow-2xl ring-1 ring-neutral-200 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:h-[600px] sm:w-[400px] sm:rounded-2xl">
       <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
         <div>
-          <p className="text-sm font-semibold">Scout</p>
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            Scout
+            <VercelTip product="Agent Runs" href={VERCEL_LINKS.agentRuns}>
+              Scout is an eve agent running on Vercel. Each chat is a durable session, and every turn shows in Agent Runs with the model it used, the tools it
+              called, and what it cost.
+            </VercelTip>
+          </p>
           <p className="text-xs text-neutral-500">Products, sizing, orders, and your cart</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-neutral-500">
@@ -214,7 +222,15 @@ export function Chat() {
             afterUpdate = false;
           }
           if (afterUpdate) return <Message key={message.id} message={message} narrate={false} />;
-          return <Message key={message.id} message={message} info={turns[turnIndex]} narrate={narrate[turnIndex] ?? false} />;
+          return (
+            <Message
+              key={message.id}
+              message={message}
+              info={turns[turnIndex]}
+              narrate={narrate[turnIndex] ?? false}
+              latest={turnIndex === turns.length - 1}
+            />
+          );
         })}
         {agent.error && <p className="text-xs text-red-600">{agent.error.message}</p>}
         <div ref={bottom} />
@@ -323,7 +339,8 @@ async function classify(message: string, recent: RecentMessage[], hasPhoto: bool
   }
 }
 
-function Message({ message, info, narrate }: { message: EveMessage; info?: TurnInfo; narrate: boolean }) {
+// `latest` is the shopper's most recent turn: only its intent chips get demo mode's marker.
+function Message({ message, info, narrate, latest = false }: { message: EveMessage; info?: TurnInfo; narrate: boolean; latest?: boolean }) {
   if (message.role !== "user") return <AssistantMessage message={message} info={info} narrate={narrate} />;
   return (
     <div className="flex flex-col items-end gap-1">
@@ -341,7 +358,7 @@ function Message({ message, info, narrate }: { message: EveMessage; info?: TurnI
           </p>
         ) : null;
       })}
-      {info && <IntentChips info={info} />}
+      {info && <IntentChips info={info} tip={latest} />}
     </div>
   );
 }
@@ -380,7 +397,7 @@ function AssistantMessage({ message, info, narrate }: { message: EveMessage; inf
 }
 
 // Half the demo: which model classified the message, and what it decided.
-function IntentChips({ info }: { info: TurnInfo }) {
+function IntentChips({ info, tip }: { info: TurnInfo; tip: boolean }) {
   if (!info.intent) return null;
   return (
     <p className="flex flex-wrap justify-end gap-1 text-[11px] text-neutral-500">
@@ -389,6 +406,12 @@ function IntentChips({ info }: { info: TurnInfo }) {
         {info.confidence !== undefined && ` · ${Math.round(info.confidence * 100)}%`}
       </span>
       {info.classifier && <span className="rounded-full bg-neutral-100 px-2 py-0.5">{info.classifier}</span>}
+      {tip && (
+        <VercelTip product="AI Gateway" align="right">
+          Before Scout answers, a quick model reads the message and picks its intent, here with how sure it was. Scout&apos;s routing table then picks the
+          model for that intent. Every call goes through Vercel AI Gateway, with fallbacks if a provider is down.
+        </VercelTip>
+      )}
     </p>
   );
 }
@@ -483,25 +506,6 @@ function productsFrom(part: EveToolPart): ProductCardData[] {
 // Shrink the photo before it leaves the browser. Phone photos run to several megabytes
 // and 1280px on the long edge is plenty for the model. Re-encoding as JPEG also drops
 // the location and camera metadata phones embed.
-// Demo mode: the presenter opens the storefront once with ?demo=1, and the chat remembers it on that
-// browser (?demo=0 turns it off). It only adds the prompt buttons below; shoppers never see them.
-const DEMO_KEY = "scout-demo";
-
-function useDemoMode(): boolean {
-  const [demo, setDemo] = useState(false);
-  useEffect(() => {
-    try {
-      const asked = new URLSearchParams(window.location.search).get("demo");
-      if (asked === "1") localStorage.setItem(DEMO_KEY, "1");
-      if (asked === "0") localStorage.removeItem(DEMO_KEY);
-      setDemo(localStorage.getItem(DEMO_KEY) === "1");
-    } catch {
-      // Storage can be unavailable; demo mode just stays off.
-    }
-  }, []);
-  return demo;
-}
-
 const DEMO_TEXT = {
   warm: "Tell me about products that keep me warm while hiking",
   tear: "Hi, the jacket I ordered arrived with a tear in the sleeve. Can I return it?",
@@ -557,6 +561,13 @@ function DemoPrompts({ disabled, onText, onPhoto }: { disabled: boolean; onText:
         <button type="button" disabled={disabled} onClick={() => void order()} className={button} title="Alex's order number and email">
           Order and email
         </button>
+        <VercelTip product="Sandbox + Workflow" href={VERCEL_LINKS.sandboxes} linkLabel="Open Sandboxes in Vercel" side="top" align="right">
+          Scout checks a photo by running code on it in a Vercel Sandbox, an isolated machine of its own. A return it takes then runs as a durable workflow,
+          which keeps going even after the chat ends.{" "}
+          <a href={VERCEL_LINKS.workflows} target="_blank" rel="noreferrer" className="font-medium text-white underline underline-offset-2 hover:no-underline">
+            Open Workflows ↗
+          </a>
+        </VercelTip>
       </div>
       {note && <p className="mt-1 text-[11px] text-amber-700">{note}</p>}
     </div>
